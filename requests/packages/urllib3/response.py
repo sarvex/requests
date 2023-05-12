@@ -47,16 +47,11 @@ class GzipDecoder(object):
         return getattr(self._obj, name)
 
     def decompress(self, data):
-        if not data:
-            return data
-        return self._obj.decompress(data)
+        return data if not data else self._obj.decompress(data)
 
 
 def _get_decoder(mode):
-    if mode == 'gzip':
-        return GzipDecoder()
-
-    return DeflateDecoder()
+    return GzipDecoder() if mode == 'gzip' else DeflateDecoder()
 
 
 class HTTPResponse(io.IOBase):
@@ -181,9 +176,8 @@ class HTTPResponse(io.IOBase):
         # Note: content-encoding value should be case-insensitive, per RFC 7230
         # Section 3.2
         content_encoding = self.headers.get('content-encoding', '').lower()
-        if self._decoder is None:
-            if content_encoding in self.CONTENT_DECODERS:
-                self._decoder = _get_decoder(content_encoding)
+        if self._decoder is None and content_encoding in self.CONTENT_DECODERS:
+            self._decoder = _get_decoder(content_encoding)
         if decode_content is None:
             decode_content = self.decode_content
 
@@ -270,13 +264,11 @@ class HTTPResponse(io.IOBase):
             'content-encoding' header.
         """
         while not is_fp_closed(self._fp):
-            data = self.read(amt=amt, decode_content=decode_content)
-
-            if data:
+            if data := self.read(amt=amt, decode_content=decode_content):
                 yield data
 
     @classmethod
-    def from_httplib(ResponseCls, r, **response_kw):
+    def from_httplib(cls, r, **response_kw):
         """
         Given an :class:`httplib.HTTPResponse` instance ``r``, return a
         corresponding :class:`urllib3.response.HTTPResponse` object.
@@ -285,23 +277,24 @@ class HTTPResponse(io.IOBase):
         with ``original_response=r``.
         """
         headers = r.msg
-        if not isinstance(headers, HTTPHeaderDict):
-            if PY3: # Python 3
+        if not isinstance(headers, HTTPHeaderDict): # Python 3
+            if PY3:
                 headers = HTTPHeaderDict(headers.items())
-            else: # Python 2
+            else:
                 headers = HTTPHeaderDict.from_httplib(headers)
 
         # HTTPResponse objects in Python 3 don't have a .strict attribute
         strict = getattr(r, 'strict', 0)
-        resp = ResponseCls(body=r,
-                           headers=headers,
-                           status=r.status,
-                           version=r.version,
-                           reason=r.reason,
-                           strict=strict,
-                           original_response=r,
-                           **response_kw)
-        return resp
+        return cls(
+            body=r,
+            headers=headers,
+            status=r.status,
+            version=r.version,
+            reason=r.reason,
+            strict=strict,
+            original_response=r,
+            **response_kw
+        )
 
     # Backwards-compatibility methods for httplib.HTTPResponse
     def getheaders(self):
@@ -348,6 +341,5 @@ class HTTPResponse(io.IOBase):
         temp = self.read(len(b))
         if len(temp) == 0:
             return 0
-        else:
-            b[:len(temp)] = temp
-            return len(temp)
+        b[:len(temp)] = temp
+        return len(temp)

@@ -9,7 +9,7 @@ except ImportError:  # `poll` doesn't exist on OSX and other platforms
         select = False
 
 
-def is_connection_dropped(conn):  # Platform-specific
+def is_connection_dropped(conn):    # Platform-specific
     """
     Returns True if the connection is dropped and should be closed.
 
@@ -20,7 +20,7 @@ def is_connection_dropped(conn):  # Platform-specific
     let the platform handle connection recycling transparently for us.
     """
     sock = getattr(conn, 'sock', False)
-    if sock is False:  # Platform-specific: AppEngine
+    if not sock:  # Platform-specific: AppEngine
         return False
     if sock is None:  # Connection already closed (such as by httplib).
         return True

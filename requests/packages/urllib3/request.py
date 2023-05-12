@@ -77,7 +77,7 @@ class RequestMethods(object):
         the url. This is useful for request methods like GET, HEAD, DELETE, etc.
         """
         if fields:
-            url += '?' + urlencode(fields)
+            url += f'?{urlencode(fields)}'
         return self.urlopen(method, url, **urlopen_kw)
 
     def request_encode_body(self, method, url, fields=None, headers=None,
@@ -136,6 +136,6 @@ class RequestMethods(object):
             extra_kw['headers'] = {'Content-Type': content_type}
 
         extra_kw['headers'].update(headers)
-        extra_kw.update(urlopen_kw)
+        extra_kw |= urlopen_kw
 
         return self.urlopen(method, url, **extra_kw)

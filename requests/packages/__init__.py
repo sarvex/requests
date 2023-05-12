@@ -30,7 +30,7 @@ class VendorAlias(object):
     def __init__(self, package_names):
         self._package_names = package_names
         self._vendor_name = __name__
-        self._vendor_pkg = self._vendor_name + "."
+        self._vendor_pkg = f"{self._vendor_name}."
         self._vendor_pkgs = [
             self._vendor_pkg + name for name in self._package_names
         ]
@@ -43,18 +43,12 @@ class VendorAlias(object):
         # Ensure that this only works for the vendored name
         if not name.startswith(self._vendor_pkg):
             raise ImportError(
-                "Cannot import %s, must be a subpackage of '%s'." % (
-                    name, self._vendor_name,
-                )
+                f"Cannot import {name}, must be a subpackage of '{self._vendor_name}'."
             )
 
         if not (name == self._vendor_name or
                 any(name.startswith(pkg) for pkg in self._vendor_pkgs)):
-            raise ImportError(
-                "Cannot import %s, must be one of %s." % (
-                    name, self._vendor_pkgs
-                )
-            )
+            raise ImportError(f"Cannot import {name}, must be one of {self._vendor_pkgs}.")
 
         # Check to see if we already have this item in sys.modules, if we do
         # then simply return that.
@@ -92,7 +86,7 @@ class VendorAlias(object):
                 __import__(real_name)
                 module = sys.modules[real_name]
             except ImportError:
-                raise ImportError("No module named '%s'" % (name,))
+                raise ImportError(f"No module named '{name}'")
 
         # If we've gotten here we've found the module we're looking for, either
         # as part of our vendored package, or as the real name, so we'll add

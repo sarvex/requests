@@ -166,7 +166,7 @@ class HTTPHeaderDict(dict):
             return False
         if not isinstance(other, type(self)):
             other = type(self)(other)
-        return dict((k1, self[k1]) for k1 in self) == dict((k2, other[k2]) for k2 in other)
+        return {k1: self[k1] for k1 in self} == {k2: other[k2] for k2 in other}
 
     def __ne__(self, other):
         return not self.__eq__(other)
@@ -233,13 +233,14 @@ class HTTPHeaderDict(dict):
         with self.add instead of self.__setitem__
         """
         if len(args) > 2:
-            raise TypeError("update() takes at most 2 positional "
-                            "arguments ({} given)".format(len(args)))
+            raise TypeError(
+                f"update() takes at most 2 positional arguments ({len(args)} given)"
+            )
         elif not args:
             raise TypeError("update() takes at least 1 argument (0 given)")
         self = args[0]
         other = args[1] if len(args) >= 2 else ()
-        
+
         if isinstance(other, Mapping):
             for key in other:
                 self.add(key, other[key])
@@ -261,10 +262,7 @@ class HTTPHeaderDict(dict):
         except KeyError:
             return []
         else:
-            if isinstance(vals, tuple):
-                return [vals[1]]
-            else:
-                return vals[1:]
+            return [vals[1]] if isinstance(vals, tuple) else vals[1:]
 
     # Backwards compatibility for httplib
     getheaders = getlist
@@ -272,7 +270,7 @@ class HTTPHeaderDict(dict):
     iget = getlist
 
     def __repr__(self):
-        return "%s(%s)" % (type(self).__name__, dict(self.itermerged()))
+        return f"{type(self).__name__}({dict(self.itermerged())})"
 
     def _copy_from(self, other):
         for key in other:

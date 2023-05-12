@@ -50,8 +50,8 @@ class CharSetGroupProber(CharSetProber):
     def get_charset_name(self):
         if not self._mBestGuessProber:
             self.get_confidence()
-            if not self._mBestGuessProber:
-                return None
+        if not self._mBestGuessProber:
+            return None
 #                self._mBestGuessProber = self._mProbers[0]
         return self._mBestGuessProber.get_charset_name()
 
@@ -98,9 +98,7 @@ class CharSetGroupProber(CharSetProber):
             if bestConf < cf:
                 bestConf = cf
                 self._mBestGuessProber = prober
-        if not self._mBestGuessProber:
-            return 0.0
-        return bestConf
+        return 0.0 if not self._mBestGuessProber else bestConf
 #        else:
 #            self._mBestGuessProber = self._mProbers[0]
 #            return self._mBestGuessProber.get_confidence()

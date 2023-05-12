@@ -78,10 +78,11 @@ class SJISProber(MultiByteCharSetProber):
 
         self._mLastChar[0] = aBuf[aLen - 1]
 
-        if self.get_state() == constants.eDetecting:
-            if (self._mContextAnalyzer.got_enough_data() and
-               (self.get_confidence() > constants.SHORTCUT_THRESHOLD)):
-                self._mState = constants.eFoundIt
+        if self.get_state() == constants.eDetecting and (
+            self._mContextAnalyzer.got_enough_data()
+            and (self.get_confidence() > constants.SHORTCUT_THRESHOLD)
+        ):
+            self._mState = constants.eFoundIt
 
         return self.get_state()
 

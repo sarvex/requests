@@ -46,6 +46,7 @@ Module Variables
 
 '''
 
+
 try:
     from ndg.httpsclient.ssl_peer_verification import SUBJ_ALT_NAME_SUPPORT
     from ndg.httpsclient.subj_alt_name import SubjectAltName as BaseSubjectAltName
@@ -74,7 +75,7 @@ _openssl_versions = {
 }
 
 try:
-    _openssl_versions.update({ssl.PROTOCOL_SSLv3: OpenSSL.SSL.SSLv3_METHOD})
+    _openssl_versions[ssl.PROTOCOL_SSLv3] = OpenSSL.SSL.SSLv3_METHOD
 except AttributeError:
     pass
 
@@ -232,25 +233,19 @@ class WrappedSocket(object):
             self._makefile_refs -= 1
 
     def getpeercert(self, binary_form=False):
-        x509 = self.connection.get_peer_certificate()
-
-        if not x509:
+        if x509 := self.connection.get_peer_certificate():
+            return (
+                OpenSSL.crypto.dump_certificate(OpenSSL.crypto.FILETYPE_ASN1, x509)
+                if binary_form
+                else {
+                    'subject': ((('commonName', x509.get_subject().CN),),),
+                    'subjectAltName': [
+                        ('DNS', value) for value in get_subj_alt_name(x509)
+                    ],
+                }
+            )
+        else:
             return x509
-
-        if binary_form:
-            return OpenSSL.crypto.dump_certificate(
-                OpenSSL.crypto.FILETYPE_ASN1,
-                x509)
-
-        return {
-            'subject': (
-                (('commonName', x509.get_subject().CN),),
-            ),
-            'subjectAltName': [
-                ('DNS', value)
-                for value in get_subj_alt_name(x509)
-            ]
-        }
 
     def _reuse(self):
         self._makefile_refs += 1

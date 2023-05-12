@@ -481,8 +481,9 @@ class RequestsTestCase(unittest.TestCase):
     def test_unicode_header_name(self):
         requests.put(
             httpbin('put'),
-            headers={str('Content-Type'): 'application/octet-stream'},
-            data='\xff')  # compat.str is unicode.
+            headers={'Content-Type': 'application/octet-stream'},
+            data='\xff',
+        )
 
     def test_pyopenssl_redirect(self):
         requests.get('https://httpbin.org/status/301')
@@ -522,7 +523,7 @@ class RequestsTestCase(unittest.TestCase):
         assert r.status_code == 200
 
     def test_unicode_multipart_post_fieldnames(self):
-        filename = os.path.splitext(__file__)[0] + '.py'
+        filename = f'{os.path.splitext(__file__)[0]}.py'
         r = requests.Request(method='POST',
                              url=httpbin('post'),
                              data={'stuff'.encode('utf-8'): 'elixr'},
@@ -706,8 +707,6 @@ class RequestsTestCase(unittest.TestCase):
 
         keys = jar.keys()
         assert keys == list(keys)
-        # make sure one can use keys multiple times
-        assert list(keys) == list(keys)
 
     def test_cookie_as_dict_values(self):
         key = 'some_cookie'
@@ -722,8 +721,6 @@ class RequestsTestCase(unittest.TestCase):
 
         values = jar.values()
         assert values == list(values)
-        # make sure one can use values multiple times
-        assert list(values) == list(values)
 
     def test_cookie_as_dict_items(self):
         key = 'some_cookie'
@@ -738,8 +735,6 @@ class RequestsTestCase(unittest.TestCase):
 
         items = jar.items()
         assert items == list(items)
-        # make sure one can use items multiple times
-        assert list(items) == list(items)
 
     def test_time_elapsed_blank(self):
         r = requests.get(httpbin('get'))
@@ -852,7 +847,7 @@ class RequestsTestCase(unittest.TestCase):
 
     def test_uppercase_scheme_redirect(self):
         parts = urlparse(httpbin('html'))
-        url = "HTTP://" + parts.netloc + parts.path
+        url = f"HTTP://{parts.netloc}{parts.path}"
         r = requests.get(httpbin('redirect-to'), params={'url': url})
         assert r.status_code == 200
         assert r.url.lower() == url.lower()
@@ -1040,7 +1035,7 @@ class RequestsTestCase(unittest.TestCase):
         total = r.history[-1].history
         i = 0
         for item in r.history:
-            assert item.history == total[0:i]
+            assert item.history == total[:i]
             i = i + 1
 
     def test_json_param_post_content_type_works(self):

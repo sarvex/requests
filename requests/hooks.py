@@ -18,10 +18,7 @@ HOOKS = ['response']
 
 
 def default_hooks():
-    hooks = {}
-    for event in HOOKS:
-        hooks[event] = []
-    return hooks
+    return {event: [] for event in HOOKS}
 
 # TODO: response is the only one
 
@@ -29,7 +26,7 @@ def default_hooks():
 def dispatch_hook(key, hooks, hook_data, **kwargs):
     """Dispatches a hook dictionary on a given piece of data."""
 
-    hooks = hooks or dict()
+    hooks = hooks or {}
 
     if key in hooks:
         hooks = hooks.get(key)

@@ -129,16 +129,20 @@ class Retry(object):
         self._observed_errors = _observed_errors # TODO: use .history instead?
 
     def new(self, **kw):
-        params = dict(
-            total=self.total,
-            connect=self.connect, read=self.read, redirect=self.redirect,
-            method_whitelist=self.method_whitelist,
-            status_forcelist=self.status_forcelist,
-            backoff_factor=self.backoff_factor,
-            raise_on_redirect=self.raise_on_redirect,
-            _observed_errors=self._observed_errors,
+        params = (
+            dict(
+                total=self.total,
+                connect=self.connect,
+                read=self.read,
+                redirect=self.redirect,
+                method_whitelist=self.method_whitelist,
+                status_forcelist=self.status_forcelist,
+                backoff_factor=self.backoff_factor,
+                raise_on_redirect=self.raise_on_redirect,
+                _observed_errors=self._observed_errors,
+            )
+            | kw
         )
-        params.update(kw)
         return type(self)(**params)
 
     @classmethod
@@ -201,10 +205,7 @@ class Retry(object):
         """ Are we out of retries? """
         retry_counts = (self.total, self.connect, self.read, self.redirect)
         retry_counts = list(filter(None, retry_counts))
-        if not retry_counts:
-            return False
-
-        return min(retry_counts) < 0
+        return False if not retry_counts else min(retry_counts) < 0
 
     def increment(self, method=None, url=None, response=None, error=None, _pool=None, _stacktrace=None):
         """ Return a new Retry object with incremented retry counters.

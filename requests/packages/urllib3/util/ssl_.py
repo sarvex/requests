@@ -122,7 +122,7 @@ def assert_fingerprint(cert, fingerprint):
 
     cert_digest = hashfunc(cert).digest()
 
-    if not cert_digest == fingerprint_bytes:
+    if cert_digest != fingerprint_bytes:
         raise SSLError('Fingerprints did not match. Expected "{0}", got "{1}".'
                        .format(hexlify(fingerprint_bytes),
                                hexlify(cert_digest)))
@@ -145,7 +145,7 @@ def resolve_cert_reqs(candidate):
     if isinstance(candidate, str):
         res = getattr(ssl, candidate, None)
         if res is None:
-            res = getattr(ssl, 'CERT_' + candidate)
+            res = getattr(ssl, f'CERT_{candidate}')
         return res
 
     return candidate
@@ -161,7 +161,7 @@ def resolve_ssl_version(candidate):
     if isinstance(candidate, str):
         res = getattr(ssl, candidate, None)
         if res is None:
-            res = getattr(ssl, 'PROTOCOL_' + candidate)
+            res = getattr(ssl, f'PROTOCOL_{candidate}')
         return res
 
     return candidate
